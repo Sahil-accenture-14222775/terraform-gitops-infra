@@ -1,33 +1,41 @@
 
-name: Terraform GitOps
+name: Terraform GitOps Deployment
 
 on:
   pull_request:
     branches:
       - main
+    paths:
+      - '**.tf'
+      - 'user_data.sh'
+
   push:
     branches:
       - main
+    paths:
+      - '**.tf'
+      - 'user_data.sh'
+
+  workflow_dispatch:
 
 permissions:
   contents: read
   pull-requests: write
-  id-token: write
 
 jobs:
   terraform-plan:
     name: Terraform Plan
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-1
 
       - name: Setup Terraform
@@ -35,26 +43,32 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
+
+      - name: Terraform Format
+        run: terraform fmt -check -recursive
 
       - name: Terraform Validate
         run: terraform validate
 
       - name: Terraform Plan
-        run: terraform plan -input=false
+        run: terraform plan -no-color
 
   terraform-apply:
     name: Terraform Apply
-    if: github.event_name == 'push'
+    needs: terraform-plan
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-1
 
       - name: Setup Terraform
@@ -63,9 +77,6 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      - name: Terraform Validate
-        run: terraform validate
-
       - name: Terraform Apply
-        run: terraform apply -auto-approve -input=false
+        run: terraform apply -auto-approve
 
