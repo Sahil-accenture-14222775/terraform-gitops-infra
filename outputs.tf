@@ -1,19 +1,14 @@
 output "instance_id" {
-  value = aws_instance.web_server.id
+  description = "EC2 Instance ID"
+  value       = aws_instance.web_server.id
 }
 
 output "public_ip" {
-  value = aws_instance.web_server.public_ip
+  description = "EC2 Public IP"
+  value       = aws_instance.web_server.public_ip
 }
 
 output "website_url" {
-  value = "http://${aws_instance.web_server.public_ip}"
-}
-
-output "cloudwatch_alarm_name" {
-  value = aws_cloudwatch_metric_alarm.cpu_alarm.alarm_name
-}
-
-output "cloudwatch_alarm_threshold" {
-  value = aws_cloudwatch_metric_alarm.cpu_alarm.threshold
+  description = "Nginx Website URL"
+  value       = "http://${aws_instance.web_server.public_ip}"
 }

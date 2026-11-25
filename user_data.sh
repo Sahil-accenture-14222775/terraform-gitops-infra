@@ -1,22 +1,21 @@
 #!/bin/bash
 
-apt-get update -y
+dnf update -y
+dnf install -y nginx
 
-apt-get install -y apache2 stress-ng
+systemctl enable nginx
+systemctl start nginx
 
-systemctl enable apache2
-systemctl start apache2
-
-cat > /var/www/html/index.html <<'EOF'
+cat > /usr/share/nginx/html/index.html <<'HTML'
 <!DOCTYPE html>
 <html>
 <head>
-    <title>EC2 CloudWatch Monitoring</title>
+    <title>Project 18 GitOps</title>
 </head>
 <body>
-    <h1>EC2 Monitoring Project</h1>
-    <h2>Apache Successfully Installed!</h2>
-    <p>Monitoring using AWS CloudWatch Alarm</p>
+    <h1>Project 18 - Terraform GitOps Deployment</h1>
+    <h2>Nginx Web Server is Running!</h2>
+    <p>Successfully deployed using AWS EC2 and Terraform.</p>
 </body>
 </html>
-EOF
+HTML
